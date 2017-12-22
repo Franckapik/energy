@@ -1,0 +1,21 @@
+{
+  "name": "energy",
+  "version": "1.0.0",
+  "description": "Energy consumption from Linky teleinformation",
+  "main": "energy.js",
+  "dependencies": {
+    "influx": "^5.0.7",
+    "serialport": "^6.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "linky",
+    "energy",
+    "serialport"
+  ],
+  "author": "franckapik",
+  "license": "ISC"
+}
