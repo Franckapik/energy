@@ -1,8 +1,9 @@
 var config = {
 
 host: '192.168.1.78',
-database: 'dht',
-tags: 'energy',
+database: 'domotique',
+tags: 'energy'
+
 
 }
 
