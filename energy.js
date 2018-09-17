@@ -11,22 +11,7 @@ job.start();
 
 
 //Configuration de la base de donnes
-var linkyDB = new Influx.InfluxDB({
-  host: config.host,
-  database: config.database,
-  schema: [{
-    measurement: 'linky',
-    fields: {
-      puissance_w: Influx.FieldType.INTEGER,
-      hchc: Influx.FieldType.INTEGER,
-      hchp: Influx.FieldType.INTEGER,
-      consoHeure: Influx.FieldType.INTEGER
-    },
-    tags: [
-      config.tags
-    ]
-  }]
-});
+var linkyDB = new Influx.InfluxDB(config.linkySchema);
 
 const Readline = SerialPort.parsers.Readline;
 
@@ -111,17 +96,23 @@ function consoHeure() {
     }
   }).then(consoH => {
     console.log(consoH);
-    linkyDB.writePoints([{
-      "measurement": "linky",
+    if (consoH) {
+      linkyDB.writePoints([{
+        "measurement": "linky",
 
-      "fields": {
-        "puissance_w": puissance,
-        "hchc": hchc,
-        "hchp": hchp,
-        "consoHeure": consoH
-      }
-    }]);
-    console.log('Insertion BD')
+        "fields": {
+          "puissance_w": puissance,
+          "hchc": hchc,
+          "hchp": hchp,
+          "consoHeure": consoH
+        }
+      }]);
+      console.log('Insertion BD')
+    } else {
+      console.log('Aucune donnée à insérer');
+    }
+
+
   }).catch(err => {
     console.log(err);
   });
