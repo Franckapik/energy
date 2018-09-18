@@ -1,34 +1,17 @@
 const SerialPort = require('serialport');
 const Influx = require('influx');
 const config = require('./config');
-const CronJob = require('cron').CronJob;
-
-const job = new CronJob('* 0 * * * *', function() {
-  consoHeure();
-});
-console.log('Cron activé');
-job.start();
-
-
-//Configuration de la base de donnes
-var linkyDB = new Influx.InfluxDB(config.linkySchema);
-
+const linkyDB = new Influx.InfluxDB(config.linkySchema);
 const Readline = SerialPort.parsers.Readline;
+const debugRead = require('debug')('read');
+const debugWrite = require('debug')('write');
 
 
-var port = new SerialPort('/dev/ttyAMA0', {
-    baudRate: 9600,
-    dataBits: 7,
-    stopBits: 1,
-    parity: 'even',
-    flowControl: true
-  },
-
+var port = new SerialPort('/dev/ttyAMA0', config.port,
   function(err) {
     if (err) {
-      return console.log('Error: ', err.message);
+      return err.message;
     }
-
   });
 
 const parser = port.pipe(new Readline({
@@ -36,43 +19,61 @@ const parser = port.pipe(new Readline({
 }));
 
 port.on('open', function() {
-  console.log('Ouverture Port :' + port.baudRate);
+  debugRead('Ouverture Port :' + port.baudRate);
 });
-
-parser.on('data', readSerialData);
-port.on('close', function() {
-  console.log('port closed.');
-});
+parser.on('data', promise1);
 port.on('error', function(error) {
-  console.log('Serial port error: ' + error);
+  debugRead('Serial port error: ' + error);
 });
 
 var puissance;
 var hchc;
 var hchp;
 var previous_hchc;
-var previous_hchp;
+var previous_hchp
+
+promise1()
+.then((puissance, hchc, hchp) => {
+  console.log(puissance, hchc, hchp);
+})
+.catch((err)=>console.log(err));
+
+function promise1() {
+  return new Promise(function(resolve, reject) {
+    if (data) {
+      if (data.match("PAPP")) {
+        var puissance = parseInt(data.replace(/^\D+/g, ''));
+        debugRead(data);
+      } else if (data.match("HCHC")) {
+        var hchc = parseInt(data.replace(/^\D+/g, ''));
+        debugRead(data);
+      } else if (data.match("HCHP")) {
+        var hchp = parseInt(data.replace(/^\D+/g, ''));
+        debugRead(data);
+      }
+    } else if (puissance, hchc, hchp) {
+      resolve(puissance, hchc, hchp)
+    } else {
+      reject('Absence de données du compteur Linky');
+    }
+  })
+}
 
 function readSerialData(data) {
   if (data) {
     if (data.match("PAPP")) {
-
       puissance = parseInt(data.replace(/^\D+/g, ''));
-
-      console.log(data);
+      debugRead(data);
     } else if (data.match("HCHC")) {
       hchc = parseInt(data.replace(/^\D+/g, ''));
-      console.log(data);
+      debugRead(data);
     } else if (data.match("HCHP")) {
       hchp = parseInt(data.replace(/^\D+/g, ''));
-      console.log(data);
-
+      debugRead(data);
     }
   } else {
-    console.log('Absence de données du compteur Linky');
+    debugRead('Absence de données du compteur Linky');
   }
-
-
 }
 
 function consoHeure() {
@@ -95,7 +96,7 @@ function consoHeure() {
       return 0
     }
   }).then(consoH => {
-    console.log(consoH);
+    debugWrite(consoH);
     if (consoH) {
       linkyDB.writePoints([{
         "measurement": "linky",
@@ -107,13 +108,12 @@ function consoHeure() {
           "consoHeure": consoH
         }
       }]);
-      console.log('Insertion BD')
+      debugWrite('Insertion BD')
     } else {
-      console.log('Aucune donnée à insérer');
+      debugWrite('Aucune donnée à insérer');
     }
 
-
   }).catch(err => {
-    console.log(err);
+    debugWrite(err);
   });
 }

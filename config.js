@@ -1,11 +1,9 @@
-var config = {
+const Influx = require('influx');
 
-host: '192.168.1.78',
-database: 'domotique',
-tags: 'energy',
+var config = {
 linkySchema: {
-  host: config.host,
-  database: config.database,
+  host: '192.168.1.78',
+  database: 'domotique',
   schema: [{
     measurement: 'linky',
     fields: {
@@ -15,10 +13,17 @@ linkySchema: {
       consoHeure: Influx.FieldType.INTEGER
     },
     tags: [
-      config.tags
+      'energy'
     ]
   }]
-}
+},
+port : {
+    baudRate: 9600,
+    dataBits: 7,
+    stopBits: 1,
+    parity: 'even',
+    flowControl: true
+  }
 
 
 }

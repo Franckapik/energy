@@ -5,6 +5,7 @@
   "main": "energy.js",
   "dependencies": {
     "cron": "^1.4.1",
+    "debug": "^4.0.1",
     "influx": "^5.0.7",
     "serialport": "^6.0.4"
   },
